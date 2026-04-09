@@ -1,26 +1,21 @@
 import streamlit as st
-import os
-from dotenv import load_dotenv
 from serpapi import GoogleSearch
 
-# Load your secret key
-load_dotenv()
-api_key = os.getenv("SERPAPI_KEY")
+# We are skipping the .env file and going straight to the Secret Vault
+if "SERPAPI_KEY" in st.secrets:
+    api_key = st.secrets["SERPAPI_KEY"]
+else:
+    api_key = None
 
-# Set up the page title
 st.set_page_config(page_title="Clothing Finder")
 st.title("👗 Clothing Finder")
-st.write("Hi Mom! Snap a photo of any clothing to find its price.")
 
-# The Camera Tool
-picture = st.camera_input("Take a photo")
-
-if picture and api_key:
-    st.write("🔍 Searching the internet for you...")
+if api_key:
+    st.write("Hi Mom! Take a photo to find the brand and price.")
+    picture = st.camera_input("Scan Clothing")
     
-    # In a real app, we would upload 'picture' to get a URL here.
-    # For now, let's just make sure the connection works!
-    st.success("Camera connected! Next, we will link the search results.")
-    
-elif not api_key:
-    st.error("Wait! You forgot to add your API Key to the .env file.")
+    if picture:
+        st.info("Photo captured! Searching...")
+        # The AI logic will go here once the camera works!
+else:
+    st.error("API Key not found! Go to Settings -> Secrets to add it.")
