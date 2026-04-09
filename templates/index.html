@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clothing Finder</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f0f0; }
+        .box { background: white; padding: 20px; border-radius: 15px; display: inline-block; margin-top: 50px; }
+        button { background: #4CAF50; color: white; padding: 15px 32px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>👗 Clothing Finder</h1>
+        <p>Help Mom find the brand and price!</p>
+        
+        <form action="/scan" method="post" enctype="multipart/form-data">
+            <input type="file" name="clothing_image" accept="image/*" capture="camera">
+            <br><br>
+            <button type="submit">Scan Clothing</button>
+        </form>
+    </div>
+</body>
+</html>
