@@ -1,5 +1,5 @@
+import streamlit as st
 import os
-from flask import Flask, render_template, request
 from dotenv import load_dotenv
 from serpapi import GoogleSearch
 
@@ -7,31 +7,20 @@ from serpapi import GoogleSearch
 load_dotenv()
 api_key = os.getenv("SERPAPI_KEY")
 
-app = Flask(__name__)
+# Set up the page title
+st.set_page_config(page_title="Clothing Finder")
+st.title("👗 Clothing Finder")
+st.write("Hi Mom! Snap a photo of any clothing to find its price.")
 
-@app.route('/')
-def home():
-    # This shows your HTML file
-    return render_template('index.html')
+# The Camera Tool
+picture = st.camera_input("Take a photo")
 
-@app.route('/scan', methods=['POST'])
-def scan():
-    # Get the image from the website
-    image_file = request.files['clothing_image']
+if picture and api_key:
+    st.write("🔍 Searching the internet for you...")
     
-    # Logic for SerpApi (Google Lens)
-    # Note: SerpApi usually needs a public URL, but for testing
-    # we can search for the "text" you describe or upload it.
-    params = {
-        "engine": "google_lens",
-        "api_key": api_key,
-        "url": "https://example.com/image.jpg" # This will be the photo Mom takes
-    }
+    # In a real app, we would upload 'picture' to get a URL here.
+    # For now, let's just make sure the connection works!
+    st.success("Camera connected! Next, we will link the search results.")
     
-    # search = GoogleSearch(params)
-    # results = search.get_dict()
-    
-    return "Scanning logic connected! Ready to find prices."
-
-if __name__ == '__main__':
-    app.run(debug=True)
+elif not api_key:
+    st.error("Wait! You forgot to add your API Key to the .env file.")
