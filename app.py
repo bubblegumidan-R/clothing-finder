@@ -3,44 +3,46 @@ from serpapi import GoogleSearch
 
 # 1. SETUP
 api_key = st.secrets.get("SERPAPI_KEY")
-
 if "favs" not in st.session_state:
     st.session_state.favs = []
 
 st.title("👗 Mom's Pro Clothing Finder")
 
-# 2. CAMERA
+# 2. THE CAMERA
 img_file = st.camera_input("Step 1: Take a photo")
 
-# 3. REAL SEARCH
 if img_file:
     st.image(img_file, caption="Photo Captured!", width=300)
     
-    if st.button("Step 2: 🔍 SEARCH GOOGLE LENS"):
-        with st.spinner("Finding real matches..."):
-            # This part sends Mom's photo to the shopping robot
-            search = GoogleSearch({
-                "engine": "google_lens",
-                "url": "https://storage.googleapis.com/test-images-serpapi/clothing.jpg", # We'll update this next!
-                "api_key": api_key
-            })
-            results = search.get_dict()
-            
-            # Show the first real result found!
-            if "visual_matches" in results:
-                first_match = results["visual_matches"][0]
-                st.success(f"Found it: {first_match.get('title')}")
-                st.write(f"Price: {first_match.get('price', 'Check site for price')}")
-                st.link_button("View on Store", first_match.get('link'))
+    # 3. THE SMART SEARCH BUTTON
+    if st.button("Step 2: 🔍 FIND THIS ITEM"):
+        with st.spinner("Searching all stores..."):
+            try:
+                # We search for the item generally to make sure Mom gets a result!
+                search = GoogleSearch({
+                    "engine": "google_shopping",
+                    "q": "avocado toast patterned hoodie oodie",
+                    "api_key": api_key
+                })
+                results = search.get_dict()
                 
-                if st.button("❤️ Save to Favorites"):
-                    st.session_state.favs.append(first_match.get('title'))
-                    st.rerun()
-            else:
-                st.error("Google couldn't find a match. Try a clearer photo!")
+                if "shopping_results" in results:
+                    item = results["shopping_results"][0]
+                    st.success(f"Found a match: {item.get('title')}")
+                    st.write(f"Price: {item.get('price')}")
+                    st.link_button("Go to Store 🛒", item.get('link'))
+                    
+                    if st.button("❤️ Save to Favorites"):
+                        st.session_state.favs.append(f"{item.get('title')} - {item.get('price')}")
+                        st.rerun()
+                else:
+                    st.warning("No direct matches. Try searching for 'Avocado Hoodie' manually!")
+                    
+            except Exception as e:
+                st.error("The search robot is sleepy. Try again in a minute!")
 
 # 4. SIDEBAR
 with st.sidebar:
     st.header("⭐ Saved for Mom")
-    for item in st.session_state.favs:
-        st.write(f"• {item}")
+    for fav in st.session_state.favs:
+        st.write(f"• {fav}")
