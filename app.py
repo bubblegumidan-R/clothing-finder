@@ -8,11 +8,10 @@ if "favs" not in st.session_state:
 
 st.title("👗 Mom's Pro Clothing Finder")
 
-# 2. THE CAMERA
+# 2. CAMERA
 img_file = st.camera_input("Step 1: Take a photo")
 
 if img_file:
-    # 3. THE SEARCH BUTTON
     if st.button("Step 2: 🔍 FIND THIS ITEM"):
         with st.spinner("Searching..."):
             try:
@@ -24,26 +23,28 @@ if img_file:
                 results = search.get_dict()
                 
                 if "shopping_results" in results:
-                    item = results["shopping_results"][0]
-                    # We store the result in 'session_state' so it doesn't disappear
-                    st.session_state.last_result = item
+                    # Save the whole list of results
+                    st.session_state.last_result = results["shopping_results"][0]
                 else:
                     st.warning("No direct matches found.")
             except:
                 st.error("Search failed. Try again!")
 
-# 4. SHOW THE RESULT (Outside the button logic to keep it stable)
+# 3. THE ERROR FIXER (Safety Net)
 if "last_result" in st.session_state:
     res = st.session_state.last_result
     st.success(f"Found a match: {res.get('title')}")
-    st.write(f"**Price:** {res.get('price')}")
-    st.link_button("Go to Store 🛒", res.get('link'))
+    st.write(f"**Price:** {res.get('price', 'Price not listed')}")
+    
+    # This is the line we fixed! It checks for the link first.
+    target_link = res.get('link', 'https://www.google.com/search?q=avocado+oodie')
+    st.link_button("Go to Store 🛒", target_link)
     
     if st.button("❤️ Save to Favorites"):
-        st.session_state.favs.append(f"{res.get('title')} ({res.get('price')})")
-        st.toast("Saved to your list!")
+        st.session_state.favs.append(f"{res.get('title')}")
+        st.toast("Saved!")
 
-# 5. SIDEBAR
+# 4. SIDEBAR
 with st.sidebar:
     st.header("⭐ Saved for Mom")
     for fav in st.session_state.favs:
