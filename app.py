@@ -1,52 +1,51 @@
 import streamlit as st
 from serpapi import GoogleSearch
 
-# --- 1. THE VAULT (Getting your key) ---
-if "SERPAPI_KEY" in st.secrets:
-    api_key = st.secrets["SERPAPI_KEY"]
-else:
-    api_key = None
+# --- 1. THE VAULT ---
+api_key = st.secrets.get("SERPAPI_KEY")
 
 st.set_page_config(page_title="Mom's Pro Clothing Finder", page_icon="👗")
 
-st.title("👗 Mom's Pro Clothing Finder")
-
-# --- 2. THE SIDEBAR (The Price Slicer) ---
-st.sidebar.header("Filter Settings")
-max_price = st.sidebar.slider("Max Price ($)", 10, 500, 100)
-st.sidebar.write(f"Looking for clothes under ${max_price}")
-
-# --- 3. THE FAVORITES BIN ---
+# --- 2. THE FAVORITES STORAGE ---
+# This makes sure the "List" exists as soon as the app starts
 if "favorites" not in st.session_state:
     st.session_state.favorites = []
 
-# --- 4. THE CAMERA ---
-img_file = st.camera_input("Scan a clothing item")
+st.title("👗 Mom's Pro Clothing Finder")
 
-if img_file and api_key:
-    st.info("Searching for deals...")
-    
-    # This is where the magic happens
-    search = GoogleSearch({
-        "engine": "google_lens",
-        "url": "https://example.com/placeholder_image.jpg", # Placeholder for now
-        "api_key": api_key
-    })
-    
-    # For now, let's show a 'Mock' result so Mom can see the Price Slicer work
-    st.subheader(f"Results under ${max_price}:")
-    
-    # Imagine these are real results from the search
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.image("https://placehold.co/200x200?text=Cool+Shirt", caption="Found Shirt - $35")
-        if st.button("❤️ Save to Favorites"):
-            st.session_state.favorites.append("Cool Shirt - $35")
-            st.success("Saved!")
+# --- 3. THE SIDEBAR (Price Slicer) ---
+st.sidebar.header("Filter Settings")
+max_price = st.sidebar.slider("Max Price ($)", 10, 500, 100)
+st.sidebar.write(f"Filtering for items under **${max_price}**")
 
-# --- 5. SHOW FAVORITES ---
-if st.session_state.favorites:
-    with st.expander("⭐ Mom's Saved List"):
-        for item in st.session_state.favorites:
-            st.write(item)
+# --- 4. FAVORITES DISPLAY (Always Visible) ---
+with st.expander("⭐ Mom's Saved List", expanded=True):
+    if st.session_state.favorites:
+        for index, item in enumerate(st.session_state.favorites):
+            st.write(f"{index + 1}. {item}")
+    else:
+        st.write("Your list is empty. Heart an item to save it!")
+
+# --- 5. THE CAMERA ---
+st.subheader("1. Scan Clothing")
+img_file = st.camera_input("Take a photo of the item")
+
+# --- 6. SEARCH RESULTS ---
+st.subheader("2. Search Results")
+
+# This part now shows "Demo" results so you can test the buttons right now!
+col1, col2 = st.columns(2)
+
+with col1:
+    st.image("https://placehold.co/200x200?text=Sample+Outfit", caption="Sample Deal - $35")
+    # THE BUTTON
+    if st.button("❤️ Save to Favorites"):
+        st.session_state.favorites.append(f"Sample Outfit - $35")
+        st.rerun() # This refreshes the page so the list updates instantly
+
+with col2:
+    if img_file:
+        st.success("Photo captured! Searching Google Lens...")
+        # (Real search logic goes here)
+    else:
+        st.info("Waiting for a photo to start real search...")
