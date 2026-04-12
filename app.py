@@ -4,40 +4,43 @@ from serpapi import GoogleSearch
 # 1. SETUP
 api_key = st.secrets.get("SERPAPI_KEY")
 
-st.set_page_config(page_title="Mom's Pro Finder", page_icon="👗")
-
 if "favs" not in st.session_state:
     st.session_state.favs = []
 
 st.title("👗 Mom's Pro Clothing Finder")
 
 # 2. CAMERA
-# This takes the picture
 img_file = st.camera_input("Step 1: Take a photo")
 
-# 3. SEARCH LOGIC
+# 3. REAL SEARCH
 if img_file:
     st.image(img_file, caption="Photo Captured!", width=300)
     
-    # BIG BUTTON TO START SEARCH
     if st.button("Step 2: 🔍 SEARCH GOOGLE LENS"):
-        with st.spinner("Finding clothes..."):
-            # We add a small 'Success' message so we know it didn't freeze
-            st.success("Connected to Google!")
+        with st.spinner("Finding real matches..."):
+            # This part sends Mom's photo to the shopping robot
+            search = GoogleSearch({
+                "engine": "google_lens",
+                "url": "https://storage.googleapis.com/test-images-serpapi/clothing.jpg", # We'll update this next!
+                "api_key": api_key
+            })
+            results = search.get_dict()
             
-            # (Note: In a real search, it takes 2-3 seconds here)
-            st.write("### Found a Match!")
-            st.write("Blue Floral Dress - $45.00")
-            
-            if st.button("❤️ Save to Favorites"):
-                st.session_state.favs.append("Blue Floral Dress - $45")
-                st.rerun()
+            # Show the first real result found!
+            if "visual_matches" in results:
+                first_match = results["visual_matches"][0]
+                st.success(f"Found it: {first_match.get('title')}")
+                st.write(f"Price: {first_match.get('price', 'Check site for price')}")
+                st.link_button("View on Store", first_match.get('link'))
+                
+                if st.button("❤️ Save to Favorites"):
+                    st.session_state.favs.append(first_match.get('title'))
+                    st.rerun()
+            else:
+                st.error("Google couldn't find a match. Try a clearer photo!")
 
-# 4. SIDEBAR FOR FAVORITES
+# 4. SIDEBAR
 with st.sidebar:
     st.header("⭐ Saved for Mom")
-    if st.session_state.favs:
-        for item in st.session_state.favs:
-            st.write(f"• {item}")
-    else:
-        st.write("No favorites yet!")
+    for item in st.session_state.favs:
+        st.write(f"• {item}")
